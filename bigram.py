@@ -127,12 +127,13 @@ class BigramLanguageModel(nn.Module): # 二元语言模型
         # print(prediction)
         return idx
     
+#----------------------------- 训练模型 ------------------------
 
 m = BigramLanguageModel(vocab_size=vocab_size) #初始化模型
 m.to(device)
 print(sum(p.numel() for p in m.parameters())/1e6, 'M parameters')
 
-# 测试模型
+
 xb, yb = get_batch("train")
 m.generate(xb, 8)
 out, loss = m(xb, yb)
@@ -154,7 +155,6 @@ def estimate_loss(model):
     model.train()
     return out
 
-# 训练模型
 optimizer = optim.AdamW(m.parameters(), lr=1e-3)
 
 for iter in range(max_iters):
@@ -171,6 +171,8 @@ for iter in range(max_iters):
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
+
+#----------------------------- 测试模型 ------------------------
 
 prompt="你好，我是令狐冲"
 print(decode(m.generate(torch.tensor([encode(prompt)], dtype=torch.long).to(device), max_new_tokens=500)[0].tolist()))

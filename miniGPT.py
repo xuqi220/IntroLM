@@ -5,7 +5,8 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.nn import functional as F
 
-# 定义超参数
+#----------------------------- 定义超参数 ------------------------
+
 batch_size = 16  # 并行处理的数据数量
 block_size = 64  # 输入seq的最大长度(tansformer可以捕获的上下文长度，长度越长上下文信息越丰富，但是计算复杂度也随之上升)
 lr = 1e-3
@@ -27,7 +28,9 @@ else:
 
 torch.manual_seed(32)
 
-# 理解数据
+#----------------------------- 构造词表 --------------------------
+
+
 seg = pkuseg.pkuseg()
 with open("datasets/xiaoaojianghu.txt", "r", encoding="utf-8") as fi:
     text = fi.read()
@@ -55,6 +58,7 @@ def encode(s:str):
 def decode(s:list):
     return "".join([itow[i] for i in s])
 
+#----------------------------- 处理训练数据 ------------------------
 
 # 编码整个数据集并存储为tensor
 data = torch.tensor(encode(text), dtype=torch.long)
@@ -219,7 +223,8 @@ class minGPT(nn.Module):
         # print(prediction)
         return idx
     
-# 定义模型
+#----------------------------- 定义模型 ------------------------
+
 m = minGPT(vocab_size=vocab_size, n_embd=n_embd)
 m.to(device)
 print(sum(p.numel() for p in m.parameters())/1e6, 'M parameters')
@@ -229,7 +234,8 @@ print(sum(p.numel() for p in m.parameters())/1e6, 'M parameters')
 # out, loss = m(xb, yb)
 print(decode(m.generate(torch.tensor([encode("令狐冲")], dtype=torch.long).to(device), max_new_tokens=1000)[0].tolist()))
 
-# 训练模型
+#----------------------------- 训练模型 ------------------------
+
 optimizer = optim.AdamW(m.parameters(), lr=1e-3)
 
 t1 = time.time()
@@ -249,7 +255,7 @@ for iter in range(max_iters):
     loss.backward()
     optimizer.step()
 
-
+#----------------------------- 测试模型 ------------------------
 print(decode(m.generate(torch.tensor([encode("令狐冲")], dtype=torch.long).to(device), max_new_tokens=1000)[0].tolist()))
 
 
