@@ -89,7 +89,7 @@ def get_batch(split): # 获取batch数据
 class BigramLanguageModel(nn.Module): # 二元语言模型
     def __init__(self, vocab_size) -> None:
         super().__init__()
-        self.token_embedding_table = nn.Embedding(vocab_size, embd_size).to(device)
+        self.embedding_table = nn.Embedding(vocab_size, embd_size).to(device)
         self.ln = nn.Linear(embd_size, vocab_size)
     
     def forward(self, idx, targets=None):
@@ -97,7 +97,7 @@ class BigramLanguageModel(nn.Module): # 二元语言模型
         idx:[4, 8]
         target:[4, 8]
         """
-        embd = self.token_embedding_table(idx) # [4, 8, 65]
+        embd = self.embedding_table(idx) # [4, 8, 65]
         logits = self.ln(embd)
         if targets is None:
             loss = None
@@ -118,7 +118,7 @@ class BigramLanguageModel(nn.Module): # 二元语言模型
             # predictions
             logits, _ = self(idx) # logits: [4, 8, 65]
             # focus on the last time step
-            logits = logits[:,-1,:] # logits: [4, 65]
+            logits = logits[:,-1,:] # logits: [4, 65] 取最后一个token的embedding
             probs = F.softmax(logits, dim=-1) # probs:[4,65]
             idx_next = torch.multinomial(probs, num_samples=1) # idx_next:[4, 1]
             idx = torch.cat((idx, idx_next), dim=-1)
